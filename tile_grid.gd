@@ -6,11 +6,16 @@ enum Move { UP, DOWN, LEFT, RIGHT }
 
 const TILE_CONTENT = preload("res://tile_content.tscn")
 
+@export var display_tile_numbers := false
+
 # Format: [ _1, 2, 3, 4,_   _5, 6, 7, 8,_   _9, 10, 11, 12,_   _13, 14, 15, 16_ ]
 # IMPORTANT: this depends on adding tiles as children in the correct way, so that the first tile is
 # the top left tile, and the last one is the bottom right (column-first, starting at top left)
 var tiles: Array[Area3D] = []
+var tile_contents: Array[TileContent] = []
 var tile_size := Vector2.ZERO
+
+var is_moving := false
 
 
 func _ready():
@@ -20,12 +25,14 @@ func _ready():
 		tile.tile_index = tile_index
 		if tile_size == Vector2.ZERO:
 			tile_size = tile.get_tile_size()
-		var t := Label3D.new()
-		tile.add_child(t)
-		t.text = str(tile_index + 1)
-		t.font_size = 12
-		t.global_rotation = Vector3(deg2rad(-90), 0, 0)
-		t.position += Vector3(0, 0.25, 0.25)
+
+		if display_tile_numbers:
+			var t := Label3D.new()
+			tile.add_child(t)
+			t.text = str(tile_index + 1)
+			t.font_size = 12
+			t.global_rotation = Vector3(deg2rad(-90), 0, 0)
+			t.position += Vector3(0, 0.25, 0.25)
 
 		tile_index += 1
 
@@ -34,9 +41,13 @@ func _ready():
 
 
 func move(direction: Move):
-	var ordered_list = tiles.filter(func(tile): return is_instance_valid(tile.content))
+	is_moving = true
+	# Get a list of the current tile contents, sorted by parent tile index
+	var content_list = tile_contents.duplicate()
+	content_list.sort_custom(func(a, b): return a.tile.tile_index < b.tile.tile_index)
+
 	if direction == Move.RIGHT or direction == Move.DOWN:
-		ordered_list.reverse()
+		content_list.reverse()
 
 	var tile_move_dir := Vector2.ZERO
 	match direction:
@@ -50,37 +61,70 @@ func move(direction: Move):
 			tile_move_dir = Vector2(-1, 0)
 
 	var did_a_move_happen := false
-	for tile in ordered_list:
+	for content in content_list:
+		var current_tile = content.tile
+		var original_position = current_tile.position
+		var final_position = original_position
+
 		# See if there is a valid tile in the move direction
-		var next_tile := find_tile_for_coords(Vector2(tile.position.x, tile.position.z) + tile_move_dir)
-		var has_merged := false
-		# Keep moving while there is room to move, but only merge once
-		while is_instance_valid(next_tile):
+		var next_tile := find_tile_for_coords(Vector2(current_tile.position.x, current_tile.position.z) + tile_move_dir)
+		var finished_moving_tile := not is_instance_valid(next_tile)
+
+		# Keep moving while there is room to move
+		while not finished_moving_tile:
 			# Check if the valid next tile already has something on it
 			var next_tile_content = next_tile.content
 			if is_instance_valid(next_tile_content):
 				# The tile has something - try and combine it
-				if not has_merged and next_tile_content.amount == tile.content.amount:
+				if next_tile_content.amount == content.amount:
 					next_tile_content.change_amount(next_tile_content.amount * 2)
-					tile.clear_tile_content(true)
+
+					# We're deleting this content when it merges, so set it to null
+					current_tile.content = null
+					content.tile = null
 					did_a_move_happen = true
-					tile = next_tile
-					next_tile = find_tile_for_coords(Vector2(next_tile.position.x, next_tile.position.z) + tile_move_dir)
-					has_merged = true
+
+					# Delete the current content and just keep the combined one.
+					tile_contents.erase(content)
+					var nt: Tween = next_tile_content.create_tween()
+					nt.tween_property(next_tile_content, "scale", Vector3.ONE * 1.1, 0.2)
+					nt.tween_property(next_tile_content, "scale", Vector3.ONE, 0.2)
+
+					var t: Tween = content.create_tween()
+					t.set_parallel(true)
+					t.tween_callback(content.queue_free).set_delay(0.15)
+					t.tween_property(content.label, "modulate:a", 0.0, 0.05).set_delay(0.1)
+					t.tween_property(content.label, "outline_modulate:a", 0.0, 0.05).set_delay(0.1)
+					final_position = next_tile.position
 				else:
-					# We can't combine, so move on to the next tile
-					next_tile = null
+					final_position = current_tile.position
+				# Regardless of whether we combined or not, this tile is moved all the way over.
+				finished_moving_tile = true
 			else:
 				# The tile doesn't have anything, so move over
-				var content = tile.clear_tile_content(false)
-				next_tile.add_tile_content(content)
+				current_tile.content = null
+				next_tile.content = content
+
+				current_tile = next_tile
+				content.tile = current_tile
+
 				did_a_move_happen = true
-				tile = next_tile
+				final_position = current_tile.position
+
 				next_tile = find_tile_for_coords(Vector2(next_tile.position.x, next_tile.position.z) + tile_move_dir)
+				finished_moving_tile = not is_instance_valid(next_tile)
+
+		if final_position != original_position:
+			var t: Tween = content.create_tween()
+			t.tween_property(content, "position", final_position, 0.15)
 
 	if did_a_move_happen:
 		# Only spawn a new block if at least one tile moved or merged
-		spawn_block()
+		var t: Tween = self.create_tween()
+		t.tween_callback(spawn_block).set_delay(0.2)
+
+	var t = self.create_tween()
+	t.tween_property(self, "is_moving", false, 0.5)
 
 
 func find_tile_for_coords(coords: Vector2) -> Tile:
@@ -97,10 +141,27 @@ func find_tile_for_coords(coords: Vector2) -> Tile:
 func spawn_block():
 	var free_tiles = tiles.filter(func (tile): return not is_instance_valid(tile.content))
 	var i := randi() % free_tiles.size()
-	free_tiles[i].add_tile_content(TILE_CONTENT.instantiate())
+
+	# Add the content as a child of the grid itself
+	var content = TILE_CONTENT.instantiate()
+	add_child(content)
+
+	# Add the content to the content list, and let its current tile know it has content now
+	var tile = free_tiles[i]
+	tile.content = content
+	content.tile = tile
+	content.position = tile.position
+	tile_contents.append(content)
+	content.scale = Vector3(0.5, 0.5, 0.5)
+	var t = content.create_tween()
+	t.tween_property(content, "scale", Vector3.ONE * 1.2, 0.1)
+	t.tween_property(content, "scale", Vector3.ONE, 0.1)
 
 
-func _unhandled_input(event):
+func _unhandled_key_input(event):
+	if is_moving:
+		return
+
 	if event.is_action_pressed("up"):
 		move(Move.UP)
 	elif event.is_action_pressed("down"):

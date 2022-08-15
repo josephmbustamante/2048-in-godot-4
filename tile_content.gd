@@ -2,6 +2,7 @@ extends Node3D
 class_name TileContent
 
 
+var tile = null
 var amount := 2
 
 @onready var label = $Label3D
