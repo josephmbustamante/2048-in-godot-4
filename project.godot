@@ -32,7 +32,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="Farm Game"
+config/name="2048 in Godot 4"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.0", "Vulkan Mobile")
 config/icon="res://icon.png"

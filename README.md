@@ -1,4 +1,4 @@
-# 2048 in Godot4
+# 2048 in Godot 4
 
 This repository is a fully working 3D clone of the popular mobile game 2048.
 
