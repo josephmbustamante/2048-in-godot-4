@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://c8njgyj04wcf6"]
+
+[ext_resource type="Script" path="res://tile_content.gd" id="1_6ickl"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ulvw5"]
+albedo_color = Color(0.490196, 0.466667, 0.337255, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_iw47b"]
+material = SubResource("StandardMaterial3D_ulvw5")
+size = Vector3(0.8, 0.1, 0.8)
+
+[node name="TileContent" type="Node3D"]
+script = ExtResource("1_6ickl")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("BoxMesh_iw47b")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.25, 0)
+modulate = Color(0.294118, 0.564706, 0.32549, 1)
+text = "1"
+outline_size = 8

@@ -1,10 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://yjd4l3m85tua"]
+[gd_scene load_steps=6 format=3 uid="uid://yjd4l3m85tua"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_p8aer"]
+[ext_resource type="PackedScene" uid="uid://ck53c5fgq7wuq" path="res://tile_grid.tscn" id="1_wheu5"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_b2v0h"]
 sky_top_color = Color(0.180392, 0.45098, 0.764706, 1)
 sky_horizon_color = Color(0.733333, 0.787255, 0.837255, 1)
-ground_bottom_color = Color(0.752941, 0.698039, 0.584314, 1)
-ground_horizon_color = Color(0.733333, 0.787255, 0.837255, 1)
+ground_bottom_color = Color(0.698039, 0.705882, 0.690196, 1)
+ground_horizon_color = Color(0.733333, 0.788235, 0.839216, 1)
 
 [sub_resource type="Sky" id="Sky_ngu1w"]
 sky_material = SubResource("ProceduralSkyMaterial_b2v0h")
@@ -16,11 +19,18 @@ tonemap_mode = 2
 glow_enabled = true
 
 [node name="Main" type="Node3D"]
+script = ExtResource("1_p8aer")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_8utpe")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, 0.75, -0.433013, 0, 0, 0)
+transform = Transform3D(-0.866025, -0.433013, 0.25, 0, 0.5, 0.866026, -0.5, 0.75, -0.433013, 0, 9, 0)
 shadow_enabled = true
 directional_shadow_max_distance = 250.0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.258819, 0.965926, 0, -0.965926, 0.258819, 1.5, 3, 2.5)
+current = true
+
+[node name="TileGrid" parent="." instance=ExtResource("1_wheu5")]
