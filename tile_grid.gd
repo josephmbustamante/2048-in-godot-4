@@ -7,6 +7,21 @@ enum Move { UP, DOWN, LEFT, RIGHT }
 const TILE_CONTENT = preload("res://tile_content.tscn")
 
 @export var display_tile_numbers := false
+@export var tile_colors := {
+	2: Color.DIM_GRAY,
+	4: Color.BURLYWOOD,
+	8: Color.LIGHT_SALMON,
+	16: Color.SALMON,
+	32: Color.INDIAN_RED,
+	64: Color.FIREBRICK,
+	128: Color.WEB_MAROON,
+	256: Color.INDIGO,
+	512: Color.REBECCA_PURPLE,
+	1024: Color.DARK_SLATE_BLUE,
+	2048: Color.CORNFLOWER_BLUE,
+	5096: Color.DODGER_BLUE,
+	10192: Color.CADET_BLUE,
+}
 
 # Format: [ _1, 2, 3, 4,_   _5, 6, 7, 8,_   _9, 10, 11, 12,_   _13, 14, 15, 16_ ]
 # IMPORTANT: this depends on adding tiles as children in the correct way, so that the first tile is
@@ -77,7 +92,8 @@ func move(direction: Move):
 			if is_instance_valid(next_tile_content):
 				# The tile has something - try and combine it
 				if next_tile_content.amount == content.amount:
-					next_tile_content.change_amount(next_tile_content.amount * 2)
+					var new_amount: int = next_tile_content.amount * 2
+					next_tile_content.change_amount(new_amount, tile_colors[new_amount])
 
 					# We're deleting this content when it merges, so set it to null
 					current_tile.content = null

@@ -1,7 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://yjd4l3m85tua"]
+[gd_scene load_steps=8 format=3 uid="uid://yjd4l3m85tua"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_p8aer"]
 [ext_resource type="PackedScene" uid="uid://ck53c5fgq7wuq" path="res://tile_grid.tscn" id="1_wheu5"]
+[ext_resource type="StyleBox" uid="uid://ejk0j45ftllu" path="res://stylebox.tres" id="3_hophk"]
+[ext_resource type="StyleBox" uid="uid://cj5ur86xkmsqb" path="res://stylebox_hover.tres" id="4_t6pju"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_b2v0h"]
 sky_top_color = Color(0.180392, 0.45098, 0.764706, 1)
@@ -17,6 +19,13 @@ background_mode = 2
 sky = SubResource("Sky_ngu1w")
 tonemap_mode = 2
 glow_enabled = true
+fog_light_color = Color(0.32549, 0.301961, 0.27451, 1)
+fog_sun_scatter = 0.68
+fog_density = 0.1
+fog_aerial_perspective = 0.257
+volumetric_fog_albedo = Color(0.8, 0.388235, 0.27451, 1)
+volumetric_fog_emission = Color(0.74902, 0.462745, 0.454902, 1)
+volumetric_fog_ambient_inject = 4.27
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_p8aer")
@@ -30,7 +39,125 @@ shadow_enabled = true
 directional_shadow_max_distance = 250.0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.258819, 0.965926, 0, -0.965926, 0.258819, 1.5, 3, 2.5)
+transform = Transform3D(1, 0, 0, 0, 0.173648, 0.984808, 0, -0.984808, 0.173648, 1.5, 3.5, 2.25)
 current = true
 
 [node name="TileGrid" parent="." instance=ExtResource("1_wheu5")]
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Columns" type="HBoxContainer" parent="HUD/MarginContainer"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 1900.0
+offset_bottom = 1060.0
+
+[node name="Left" type="VBoxContainer" parent="HUD/MarginContainer/Columns"]
+offset_right = 316.0
+offset_bottom = 1040.0
+theme_override_constants/separation = 20
+
+[node name="HighScoreArea" type="PanelContainer" parent="HUD/MarginContainer/Columns/Left"]
+offset_right = 316.0
+offset_bottom = 144.0
+size_flags_horizontal = 0
+theme_override_styles/panel = ExtResource("3_hophk")
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/MarginContainer/Columns/Left/HighScoreArea"]
+offset_right = 316.0
+offset_bottom = 144.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 5
+
+[node name="Rows" type="VBoxContainer" parent="HUD/MarginContainer/Columns/Left/HighScoreArea/MarginContainer"]
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 306.0
+offset_bottom = 139.0
+theme_override_constants/separation = -10
+
+[node name="Label" type="Label" parent="HUD/MarginContainer/Columns/Left/HighScoreArea/MarginContainer/Rows"]
+offset_right = 296.0
+offset_bottom = 53.0
+theme_override_font_sizes/font_size = 36
+text = "BEST"
+
+[node name="HighScore" type="Label" parent="HUD/MarginContainer/Columns/Left/HighScoreArea/MarginContainer/Rows"]
+offset_top = 43.0
+offset_right = 296.0
+offset_bottom = 134.0
+theme_override_font_sizes/font_size = 64
+text = "28463458"
+
+[node name="CurrentScoreArea" type="PanelContainer" parent="HUD/MarginContainer/Columns/Left"]
+offset_top = 164.0
+offset_right = 316.0
+offset_bottom = 308.0
+size_flags_horizontal = 0
+theme_override_styles/panel = ExtResource("3_hophk")
+
+[node name="MarginContainer" type="MarginContainer" parent="HUD/MarginContainer/Columns/Left/CurrentScoreArea"]
+offset_right = 316.0
+offset_bottom = 144.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 5
+
+[node name="Rows" type="VBoxContainer" parent="HUD/MarginContainer/Columns/Left/CurrentScoreArea/MarginContainer"]
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 306.0
+offset_bottom = 139.0
+theme_override_constants/separation = -10
+
+[node name="Label" type="Label" parent="HUD/MarginContainer/Columns/Left/CurrentScoreArea/MarginContainer/Rows"]
+offset_right = 296.0
+offset_bottom = 53.0
+theme_override_font_sizes/font_size = 36
+text = "CURRENT"
+
+[node name="CurrentScore" type="Label" parent="HUD/MarginContainer/Columns/Left/CurrentScoreArea/MarginContainer/Rows"]
+offset_top = 43.0
+offset_right = 296.0
+offset_bottom = 134.0
+theme_override_font_sizes/font_size = 64
+text = "28463458"
+
+[node name="Control" type="Control" parent="HUD/MarginContainer/Columns/Left"]
+offset_top = 328.0
+offset_right = 316.0
+offset_bottom = 1040.0
+size_flags_vertical = 3
+
+[node name="Control" type="Control" parent="HUD/MarginContainer/Columns"]
+offset_left = 320.0
+offset_right = 1505.0
+offset_bottom = 1040.0
+size_flags_horizontal = 3
+
+[node name="Right" type="VBoxContainer" parent="HUD/MarginContainer/Columns"]
+offset_left = 1509.0
+offset_right = 1880.0
+offset_bottom = 1040.0
+alignment = 2
+
+[node name="NewGameButton" type="Button" parent="HUD/MarginContainer/Columns/Right"]
+offset_top = 952.0
+offset_right = 371.0
+offset_bottom = 1040.0
+size_flags_horizontal = 0
+theme_override_font_sizes/font_size = 64
+theme_override_styles/normal = ExtResource("3_hophk")
+theme_override_styles/hover = ExtResource("4_t6pju")
+text = " New Game "
